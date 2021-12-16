@@ -20,7 +20,7 @@ import java.util.List;
 public class Application {
 
     public static void main(String[] args) {
-        int totalGames = 10;
+        int totalGames = 50;
         int boardSize = 100;
 
         List<IBoardEntityValidator> boardEntityValidators = Arrays.asList(

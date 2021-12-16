@@ -18,14 +18,12 @@ public class Game {
     private static final String WIN_MSG = "Congrats! %s. You won! '(^-^)'";
 
     private Deque<Player> players;
-    private Queue<Player> winners;
     private MovesHandler movesHandler;
     private DiceService diceService;
     private MetricsHandler metricsHandler;
     private final int winPosition;
 
     public Game(int size, List<Player> players, MovesHandler movesHandler, DiceService diceService, MetricsHandler metricsHandler) {
-        this.winners = new LinkedList<>();
         this.movesHandler = movesHandler;
         this.diceService = diceService;
         this.metricsHandler = metricsHandler;
@@ -46,7 +44,6 @@ public class Game {
             movesHandler.makeMove(player, move);
             if (haveWon(player)) {
                 LogUtil.log(WIN_MSG + "%n", player.getName());
-                winners.offer(player);
                 metricsHandler.captureWin(player);
                 break;
             }
