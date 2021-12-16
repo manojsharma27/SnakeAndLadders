@@ -12,7 +12,15 @@ Different kind of metrics such as number of wins, min/avg/max no of dice rolls f
  - The player who is first to bring their token to the last square of the board is the winner.
  - The player must roll the exact number to reach the final square. For example, if a player
 needs a 3 to reach square 100 and rolls a 5, the player stays at the current location.
- - - If the player rolls 6 when they are stuck, they get additional rolls, but the token does not move ahead. For example, 3 is needed to win and the player rolls a 6. Then they get the additional roll. If they roll 6 again, they get another roll, and so
+   - If the player rolls 6 when they are stuck, they get additional rolls, but the token does not move ahead. For example, 3 is needed to win and the player rolls a 6. Then they get the additional roll. If they roll 6 again, they get another roll, and so
 on.
+
+## Quick steps to run:
+ - Checkout the code.
+ - Do `mvn clean install` on root directory.
+ - Once build is success, run the `Application.java` file directly from your IDE.
+ - Or otherwise, you can run jar via command line using:
+   - `java -jar target/SnakeAndLadders-1.0-SNAPSHOT.jar`
+
 
 Happy Coding!
