@@ -1,8 +1,10 @@
 package com.ms.controller;
 
+import com.ms.metrics.MetricsHandler;
 import com.ms.model.Player;
 import com.ms.service.DiceService;
 import com.ms.service.MovesHandler;
+import com.ms.util.LogUtil;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -19,15 +21,22 @@ public class Game {
     private Queue<Player> winners;
     private MovesHandler movesHandler;
     private DiceService diceService;
+    private MetricsHandler metricsHandler;
     private final int winPosition;
 
-    public Game(int size, List<Player> players, MovesHandler movesHandler, DiceService diceService) {
-        this.players = new LinkedList<>();
-        this.players.addAll(players);
+    public Game(int size, List<Player> players, MovesHandler movesHandler, DiceService diceService, MetricsHandler metricsHandler) {
         this.winners = new LinkedList<>();
         this.movesHandler = movesHandler;
         this.diceService = diceService;
+        this.metricsHandler = metricsHandler;
         this.winPosition = size;
+        initPlayers(players);
+    }
+
+    private void initPlayers(List<Player> inputPlayers) {
+        inputPlayers.forEach(p -> p.setPosition(0));
+        this.players = new LinkedList<>();
+        this.players.addAll(inputPlayers);
     }
 
     public void start() {
@@ -36,8 +45,9 @@ public class Game {
             int move = diceService.roll(DICE_LIMIT);
             movesHandler.makeMove(player, move);
             if (haveWon(player)) {
-                System.out.printf(WIN_MSG + "%n", player.getName());
+                LogUtil.log(WIN_MSG + "%n", player.getName());
                 winners.offer(player);
+                metricsHandler.captureWin(player);
                 break;
             }
 

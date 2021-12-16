@@ -1,21 +1,24 @@
 package com.ms.controller;
 
-import com.ms.exception.BoardEntityConflictException;
 import com.ms.model.AbstractBoardEntity;
+import com.ms.validators.IBoardEntityValidator;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class Board {
 
     private final int size;
-    private Map<Integer, AbstractBoardEntity> entityMap;
-    private Set<Integer> endPositions;
+    private final Map<Integer, AbstractBoardEntity> entityMap;
+    private final Set<Integer> endPositions;
+    private final List<IBoardEntityValidator> boardEntityValidators;
 
-    public Board(int size) {
+    public Board(int size, List<IBoardEntityValidator> boardEntityValidators) {
         this.size = size;
+        this.boardEntityValidators = boardEntityValidators;
         entityMap = new HashMap<>();
         endPositions = new HashSet<>();
     }
@@ -28,22 +31,8 @@ public class Board {
         return entityMap;
     }
 
-    public void setEntityMap(Map<Integer, AbstractBoardEntity> entityMap) {
-        this.entityMap = entityMap;
-        endPositions = new HashSet(entityMap.values());
-    }
-
     public void addEntity(AbstractBoardEntity entity) {
-        int position = entity.getStart();
-        if (entityMap.containsKey(position) || endPositions.contains(position)) {
-            throw new BoardEntityConflictException(entity, position);
-        }
-
-        position = entity.getEnd();
-        if (entityMap.containsKey(position) || endPositions.contains(position)) {
-            throw new BoardEntityConflictException(entity, position);
-        }
-
+        validate(entity);
         entityMap.put(entity.getStart(), entity);
         endPositions.add(entity.getEnd());
     }
@@ -56,7 +45,13 @@ public class Board {
         return entityMap.get(position);
     }
 
-    public void display() {
-        // todo: implement
+    public Set<Integer> getEndPositions() {
+        return endPositions;
+    }
+
+    private void validate(AbstractBoardEntity entity) {
+        for (IBoardEntityValidator validator : boardEntityValidators) {
+            validator.validate(this, entity);
+        }
     }
 }

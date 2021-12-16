@@ -2,11 +2,17 @@ package com.ms;
 
 import com.ms.controller.Board;
 import com.ms.controller.Game;
+import com.ms.metrics.GameMetrics;
+import com.ms.metrics.MetricsHandler;
 import com.ms.model.Ladder;
 import com.ms.model.Player;
 import com.ms.model.Snake;
 import com.ms.service.DiceService;
 import com.ms.service.MovesHandler;
+import com.ms.util.LogUtil;
+import com.ms.validators.BoardEntityConflictValidator;
+import com.ms.validators.BoardEntityStartEndPositionValidator;
+import com.ms.validators.IBoardEntityValidator;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,15 +20,35 @@ import java.util.List;
 public class Application {
 
     public static void main(String[] args) {
-        DiceService diceService = new DiceService();
-        Board board = new Board(100);
+        int totalGames = 10;
+        int boardSize = 100;
+
+        List<IBoardEntityValidator> boardEntityValidators = Arrays.asList(
+                new BoardEntityStartEndPositionValidator(),
+                new BoardEntityConflictValidator()
+        );
+
+        Board board = new Board(boardSize, boardEntityValidators);
         addSnakes(board);
         addLadders(board);
-        MovesHandler movesHandler = new MovesHandler(board);
+
+        DiceService diceService = new DiceService();
         List<Player> players = Arrays.asList(new Player("Manoj"), new Player("Avinash"), new Player("Sahaj"));
-        Game game = new Game(100, players, movesHandler, diceService);
-        game.start();
+        MetricsHandler metricsHandler = new MetricsHandler(players);
+        MovesHandler movesHandler = new MovesHandler(board, metricsHandler);
+        GameMetrics gameMetrics = new GameMetrics(players);
+
+        for (int i = 0; i < totalGames; i++) {
+            System.out.println(">>>> Starting game : " + (i+1));
+            Game game = new Game(boardSize, players, movesHandler, diceService, metricsHandler);
+            game.start();
+            gameMetrics.addMetricsMap("Game" + i, metricsHandler.getPlayerMetricsMap());
+            metricsHandler.reset();
+        }
+
+        logMetrics(gameMetrics);
     }
+
 
     private static void addLadders(Board board) {
         board.addEntity(new Ladder(4, 25));
@@ -43,5 +69,18 @@ public class Application {
         board.addEntity(new Snake(43, 18));
         board.addEntity(new Snake(40, 3));
         board.addEntity(new Snake(27, 5));
+    }
+
+    private static void logMetrics(GameMetrics gameMetrics) {
+        LogUtil.log("%nMetrics%n-------%n");
+        LogUtil.log("Total Wins: %n%s%n%n", gameMetrics.getWinsMetric());
+        LogUtil.log("Rolls to win: %n%s%n%n", gameMetrics.getRollsToWinMetrics());
+        LogUtil.log("Climbs metric: %n%s%n%n", gameMetrics.getClimbsMetrics());
+        LogUtil.log("Slides metric: %n%s%n%n", gameMetrics.getSlidesMetrics());
+        LogUtil.log("Biggest Climb metric: %n%s%n%n", gameMetrics.getBiggestClimbMetric());
+        LogUtil.log("Biggest Slide metric: %n%s%n%n", gameMetrics.getBiggestSlideMetric());
+        LogUtil.log("Longest Turn metric: %n%s%n%n", gameMetrics.getLongestTurnMetric());
+        LogUtil.log("Total Unlucky Rolls metric: %n%s%n%n", gameMetrics.getUnluckyRollsMetric());
+        LogUtil.log("Total Lucky Rolls metric: %n%s%n%n", gameMetrics.getLuckyRollsMetric());
     }
 }

@@ -27,4 +27,6 @@ public abstract class AbstractBoardEntity {
     }
 
     public abstract String getEncounteredMsg();
+
+    public abstract boolean isPositionValid();
 }
